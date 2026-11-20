@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'none'; base-uri 'none'">
+  <title>Formoji · 이모지로 보는 크리스마스 예언</title>
+  <meta name="description" content="이모지로 보는 크리스마스 예언. 최근에 쓴 이모지 네 개로 원하는 날의 점괘를 뽑아보세요. 짧은 이야기와 움직이는 문자 그림으로 보여드려요.">
+  <meta name="theme-color" content="#080d18">
+  <link rel="icon" href="mark.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css?v=25">
+  <script src="glyph-art.js?v=21" defer></script>
+  <script src="text-tree.js?v=14" defer></script>
+  <script src="emoji-frequency.js?v=1" defer></script>
+  <script src="fortune.js?v=23" defer></script>
+  <script src="story-share.js?v=2" defer></script>
+  <script src="app.js?v=26" defer></script>
+</head>
+<body>
+<svg class="definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9a2.8 2.8 0 0 1 5.4.6c0 2.2-2.7 2.5-2.7 4.5"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+</defs></svg>
+<div class="terminal">
+  <header class="site-header">
+    <a class="wordmark" href="#home" aria-label="포모지 홈">Formoji</a>
+    <div class="header-meta">
+      <a id="about-link" class="about-link" href="#about">서비스 소개</a>
+      <button type="button" class="motion-btn" id="motion-toggle" aria-label="문자 그림 멈추기" title="문자 그림 멈추기">
+        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path id="motion-icon" d="M9 5v14m6-14v14"/></svg>
+      </button>
+      <button type="button" class="help-btn" id="help-open" aria-label="이용 방법"><svg class="icon" aria-hidden="true"><use href="#i-help"/></svg></button>
+    </div>
+  </header>
+  <nav id="layout-preview-nav" class="layout-preview-nav" aria-label="레이아웃 미리보기" hidden>
+    <span>레이아웃 미리보기</span>
+    <a href="#home">메인</a><a href="#waiting">대기</a><a href="#result">결과</a>
+  </nav>
+  <main>
+    <div id="home-view">
+      <div class="art tree-art"><pre id="input-signal" role="img" aria-label="눈 내리는 밤, 문자로 그린 크리스마스 트리"></pre></div>
+      <section class="compose" aria-labelledby="compose-title">
+        <h1 id="compose-title">최근에 쓴 이모지 네 개를 넣어보세요</h1>
+        <p class="subtitle" id="entry-instruction">키보드의 최근 이모지에서 왼쪽 두 번째 세로줄을 위에서부터 골라보세요.</p>
+        <label class="fortune-date-label" for="fortune-date">점괘를 볼 날짜</label>
+        <input id="fortune-date" type="date" value="2026-12-25" required>
+        <div class="input-label-row">
+          <label for="emoji-entry">최근 이모지</label>
+          <span class="counter" id="counter" aria-live="polite">0 / 4</span>
+        </div>
+        <div class="entry-wrap" id="entry-wrap">
+          <input id="emoji-entry" type="text" placeholder="서로 다른 이모지 네 개" aria-describedby="entry-instruction entry-hint" autocomplete="off" spellcheck="false">
+          <button type="button" id="clear" class="field-clear" aria-label="이모지 모두 지우기" hidden><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+        </div>
+        <button type="button" id="picker-open" class="picker-button" hidden aria-expanded="false" aria-controls="emoji-picker">이모지 고르기</button>
+        <div id="emoji-picker" class="emoji-picker" role="group" aria-label="고를 수 있는 이모지" hidden></div>
+        <p class="feedback" id="entry-hint" role="status"></p>
+        <button type="button" id="start" class="primary full" disabled>점괘 뽑기</button>
+      </section>
+      <aside id="home-ad-slot" class="ad-slot monetization-slot" aria-label="메인 배너" hidden>
+        <div class="slot-preview"><strong>메인 배너</strong><span>가로 최대 480px · 높이 64px</span></div>
+      </aside>
+    </div>
+    <section id="waiting-view" class="separate-view" aria-labelledby="waiting-title" hidden>
+      <div class="art" aria-hidden="true"><canvas id="reading-signal"></canvas></div>
+      <div class="stage-content">
+        <h2 id="waiting-title" tabindex="-1">이모지로 이야기를 만드는 중</h2>
+        <div class="waiting-emojis" id="waiting-emojis"></div>
+        <progress id="waiting-progress" class="waiting-progress" aria-label="점괘 준비 진행률" max="1" value="0"></progress>
+      </div>
+      <aside id="waiting-ad-slot" class="ad-slot monetization-slot" aria-label="대기 배너 또는 협찬 안내" hidden>
+        <div class="slot-preview"><strong>대기 배너 · 협찬 안내</strong><span>가로 최대 480px · 높이 72px</span></div>
+      </aside>
+      <div class="stage-content">
+        <div class="stage-actions">
+          <a class="secondary" href="#home">이모지 입력으로 돌아가기</a>
+        </div>
+      </div>
+    </section>
+    <section id="result-view" class="separate-view" aria-label="점괘 결과" hidden>
+      <article id="story-card" class="story-card"></article>
+      <div class="stage-content result-actions">
+        <div class="stage-actions">
+          <button type="button" class="primary full" id="share-story" disabled>스토리 공유</button>
+          <button type="button" class="secondary" id="save-story" disabled>이미지 저장</button>
+          <button type="button" class="secondary" id="copy-home">메인 링크 복사</button>
+          <a class="secondary" href="#input">이모지 바꿔 보기</a>
+          <button type="button" class="secondary support-action" id="support-open">디지털 복채</button>
+        </div>
+        <p class="subtitle" id="share-note" role="status"></p>
+        <input type="text" id="home-link-value" aria-label="복사할 메인 링크" readonly hidden>
+      </div>
+      <aside id="result-affiliate-slot" class="affiliate-slot monetization-slot" aria-label="상품 추천 카드" hidden>
+        <div class="slot-preview"><strong>상품 추천 카드</strong><span>가로 최대 480px · 높이 88px</span></div>
+      </aside>
+      <aside id="result-ad-slot" class="ad-slot monetization-slot" aria-label="결과 하단 광고 배너" hidden>
+        <div class="slot-preview"><strong>결과 하단 광고 배너</strong><span>가로 최대 480px · 높이 64px</span></div>
+      </aside>
+    </section>
+    <article id="about-view" class="about-view" hidden>
+      <section>
+        <h1 id="about-title">최근에 쓴 이모지 네 개로 보는 오늘의 운세</h1>
+        <div class="about-bubbles"><span>괜찮아요 🙂</span><span>괜찮아요 🫠</span></div>
+        <p>“괜찮아요” 뒤에 🙂가 붙을 때와 🫠가 붙을 때, 읽는 느낌이 다릅니다. 말은 똑같은데 하나는 정말 괜찮아 보이고, 하나는 더 물어보면 안 될 것 같습니다. 우리는 이모지 하나로 말투를 바꾸고, 굳이 설명하기 귀찮은 기분도 전합니다.</p>
+      </section>
+      <section>
+        <p>포모지는 여기서 출발했습니다. 최근에 쓴 이모지 네 개를 꺼내 놓고, 넷이 전부 등장해도 어색하지 않은 상황을 만들어보는 겁니다. ☕ 하나만 보면 아침에 마신 커피인지, 누군가에게 만나자고 건넨 말인지 알기 어렵습니다. 그런데 옆에 🫠와 💬가 있으면 ‘피곤한데 연락이 왔다’는 상황을 떠올릴 수 있죠. 마지막 🚪까지 넣어보면, 집에서 쉬려던 사람이 커피 한 잔 하자는 말에 다시 밖으로 나가는 그림이 나옵니다.</p>
+        <div class="about-emojis" aria-label="커피, 녹아내리는 얼굴, 말풍선, 문"><span>☕</span><span>🫠</span><span>💬</span><span>🚪</span></div>
+        <p>그다음은 그 사람의 하루를 조금 더 굴려봅니다. 피곤해서 망설였는데도 신발을 다시 신었다면, 정말 커피만 마시고 돌아올까요? 포모지는 그렇게 상상한 다음 일을 짧은 점괘로 쓰고, 그중 한 장면을 움직이는 문자 그림으로 보여줍니다. 이 조합이라면 골목은 어둡고, 카페 문틈으로 새어 나오는 불빛만 깜빡이는 식입니다.</p>
+      </section>
+      <section aria-labelledby="about-example">
+        <h2 id="about-example">☕ 🫠 💬 🚪로 뽑은 오늘의 점괘</h2>
+        <div class="about-art"><canvas id="about-cafe" role="img" aria-label="어두운 골목의 카페 문틈에서 금빛이 새어 나오는 문자 그림"></canvas></div>
+        <p>오늘은 집에 가자마자 씻고 누울 계획입니다. 그런데 집 앞에 다 와서 “커피 한 잔만?” 하는 연락이 옵니다. 약속대로 커피는 한 잔만 마십니다. <span class="about-underline">저녁을 어디서 먹을지는</span> 그다음에 정합니다.</p>
+        <p>포모지는 이모지 네 개에서 여기까지 상상합니다. 저녁까지 먹는다는 대목은 포모지가 보탰습니다. ☕는 커피까지만 말했거든요.</p>
+        <a class="primary about-cta" href="#input">이모지 네 개로 점괘 뽑기</a>
+        <p class="about-note">입력한 이모지로 만든 점괘예요. 심심할 때 한 번 봐보세요.</p>
+      </section>
+    </article>
+    <article id="privacy-view" class="privacy-view" aria-labelledby="privacy-title" hidden>
+      <h1 id="privacy-title">개인정보처리방침</h1>
+      <p class="privacy-date">시행일 <time datetime="2026-11-20">2026년 11월 20일</time></p>
+      <p>포모지는 회원가입 없이 이용할 수 있습니다. 아래에서 점괘를 볼 때 어떤 정보가 어디에 남는지 확인할 수 있습니다.</p>
+      <section>
+        <h2>1. 이모지와 날짜</h2>
+        <p>입력한 이모지 네 개와 선택한 날짜를 이용해 브라우저에서 점괘와 문자 그림을 만듭니다. 점괘를 만드는 데 이 입력값을 포모지 서버나 외부 AI 서비스로 전송하지 않습니다.</p>
+        <p>새로고침해도 직전에 본 점괘를 다시 열 수 있도록 마지막 이모지와 날짜를 현재 탭의 임시 저장소(sessionStorage)에 보관합니다. 다른 점괘를 뽑으면 이전 값은 새 값으로 바뀝니다. 일반적으로 탭을 닫으면 브라우저가 이 정보를 지웁니다. 바로 삭제하려면 브라우저 설정에서 포모지의 사이트 데이터를 삭제할 수 있습니다.</p>
+      </section>
+      <section>
+        <h2>2. 이미지 저장과 공유</h2>
+        <p>공유용 이미지는 기기에서 만듭니다. 이미지를 저장하면 기기에 파일이 남고, 공유할 앱을 직접 선택하면 그 앱에 이미지가 전달됩니다. 이후 이미지의 처리나 삭제는 선택한 앱과 게시물 공개 설정에 따릅니다. 메인 링크 복사에는 입력한 이모지나 날짜가 포함되지 않습니다.</p>
+      </section>
+      <section>
+        <h2>3. 쿠키와 광고</h2>
+        <p>광고가 표시될 때 Google 애드센스와 카카오 애드핏 등 외부 광고사업자는 광고 제공과 효과 측정을 위해 쿠키, 웹 비콘, IP 주소 또는 기기 식별자를 이용해 정보를 수집·이용할 수 있습니다. 이 정보는 설정에 따라 맞춤형 광고에도 사용될 수 있습니다.</p>
+        <p>브라우저 설정에서 쿠키를 삭제하거나 제한할 수 있습니다. 광고 정보 처리 및 맞춤설정 방법은 <a href="https://policies.google.com/technologies/partner-sites?hl=ko">Google</a>과 <a href="https://privacy.kakao.com/policy?lang=ko">카카오</a>의 안내를 참고해 주세요.</p>
+      </section>
+      <section>
+        <h2>4. 개인정보 문의와 권리 행사</h2>
+        <p>포모지 운영자는 개인정보 문의에 답하기 위해 발신 이메일 주소와 문의 내용에 포함된 정보를 처리합니다. 문의 답변과 후속 처리가 끝나면 해당 정보를 삭제합니다. 법령상 보관 의무가 있는 경우에는 정해진 기간 동안 보관한 뒤 삭제합니다.</p>
+        <p>개인정보 열람·정정·삭제·처리정지 요청과 관련 문의는 포모지 운영자(<a href="mailto:702work3@gmail.com">702work3@gmail.com</a>)에게 보낼 수 있습니다. 브라우저에 임시 저장된 점괘 입력값은 1항에 안내된 방법으로 직접 삭제할 수 있습니다.</p>
+      </section>
+      <section>
+        <h2>5. 방침 변경</h2>
+        <p>개인정보 처리 방식이 바뀌면 이 페이지에 변경 내용과 시행일을 표시합니다.</p>
+      </section>
+      <a class="secondary" id="privacy-return" href="#home">메인으로 돌아가기</a>
+    </article>
+  </main>
+  <footer id="site-footer" class="site-footer">
+    <a id="privacy-link" href="#privacy">개인정보처리방침</a>
+  </footer>
+</div>
+<dialog id="support-dialog" aria-labelledby="support-title">
+  <div class="dialog-head">
+    <h2 id="support-title">디지털 복채</h2>
+    <form method="dialog"><button class="round" aria-label="닫기"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button></form>
+  </div>
+  <p class="subtitle">포모지를 응원하는 작은 복채예요. AQR 후원 연결을 준비 중이에요.</p>
+</dialog>
+<dialog id="guide" aria-labelledby="guide-title"><div class="dialog-head"><h2 id="guide-title">이용 방법</h2><button type="button" class="round" id="help-close" aria-label="닫기"><svg class="icon"><use href="#i-close"/></svg></button></div>
+<details open><summary>어떤 이모지를 넣나요?</summary><div class="detail-body"><div class="keyboard-grid" aria-hidden="true"><span>🎁</span><b>💌</b><span>🥰</span><span>😴</span><span>⭐</span><b>☕</b><span>🎉</span><span>🫠</span><span>🍰</span><b>🧣</b><span>😂</span><span>🐻</span><span>💚</span><b>🎄</b><span>🫶</span><span>✨</span></div><p>키보드에서 최근에 쓴 이모지를 열고, 왼쪽 두 번째 세로줄에서 위부터 네 개를 넣어보세요. 키보드 배열이 다르면 최근에 쓴 이모지 중에서 네 개를 골라도 돼요.</p></div></details>
+<details><summary>이모지는 어떻게 넣나요?</summary><div class="detail-body"><p>입력 칸을 눌러 키보드로 이모지를 넣거나, 복사한 이모지를 붙여넣으세요. 이모지 네 개는 모두 달라야 해요.</p></div></details>
+<details><summary>점괘는 어떻게 나오나요?</summary><div class="detail-body"><p>고른 날짜에 일어날 법한 일을 이모지 네 개로 상상해요. 짧은 점괘와 움직이는 문자 그림으로 볼 수 있어요.</p></div></details>
+</dialog>
+</body></html>
