@@ -41,7 +41,10 @@
         <h1 id="compose-title">최근에 쓴 이모지 네 개를 넣어보세요</h1>
         <p class="subtitle" id="entry-instruction">키보드의 최근 이모지에서 왼쪽 두 번째 세로줄을 위에서부터 골라보세요.</p>
         <label class="fortune-date-label" for="fortune-date">점괘를 볼 날짜</label>
-        <input id="fortune-date" type="date" value="2026-12-25" required>
+        <select id="fortune-date" required>
+          <option value="2026-12-24">12월 24일 · 크리스마스이브</option>
+          <option value="2026-12-25" selected>12월 25일 · 크리스마스</option>
+        </select>
         <div class="input-label-row">
           <label for="emoji-entry">최근 이모지</label>
           <span class="counter" id="counter" aria-live="polite">0 / 4</span>

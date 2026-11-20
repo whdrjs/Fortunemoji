@@ -353,7 +353,7 @@ get('guide').addEventListener('click',e => {
 });
 addEventListener('hashchange',() => renderRoute(true));
 dateInput.value = lastFortune?.date || defaultFortuneDate;
-dateInput.addEventListener('input', () => {
+dateInput.addEventListener('change', () => {
   startButton.disabled = !canStartFortune();
 });
 applyInput(lastFortune?.emojis.join('') || '');

@@ -9,13 +9,13 @@ const fortuneClues = [
   ['🏠🏡🛋🛏🛌', '집에서 쉬려던 참에', '조금 더 편한 자리로 옮기자는', '편한 자리에 앉아 시간 가는 줄 모른다', '오늘 제일 편했던 시간이 바로 그때였다고 느낀다', 'home'],
   ['🍽', '밥만 먹고 바로 들어가려다가', '같이 밥 한 끼만 먹자는', '다 먹고도 아무도 자리에서 일어나지 않는다', '그날은 음식보다 식탁에서 터진 웃음이 먼저 생각난다'],
   ['🚪', '문을 막 닫으려던 참에', '문 앞에서 잠깐 보자는', '닫았던 문을 다시 열게 된다', '집에 바로 가려던 계획은 틀어진다', 'home'],
-  ['🎄🎅🤶🦌🔔', '크리스마스 장식을 물끄러미 보다가', '장식에 불이 켜질 때까지 있자는', '불빛이 들어오는 순간을 같이 본다', '뒤늦게 오늘이 크리스마스였다는 실감이 난다', 'tree'],
+  ['🎄🎅🤶🦌🔔', '크리스마스 장식을 물끄러미 보다가', '장식에 불이 켜질 때까지 있자는', '장식에 불빛이 들어오는 순간을 같이 본다', '길가의 장식 불빛을 보고 나서야 연말이 실감 난다', 'tree'],
   ['🎁💝', '아직 풀지 않은 선물을 곁에 두고', '선물을 지금 열어보자는', '포장지를 뜯다가 예상과 다른 물건에 웃는다', '선물 자체보다 건네던 표정이 오래 남는다', 'tree'],
-  ['❄☃⛄🧣🧤', '찬 공기에 몸을 움츠리다가', '따뜻한 데로 들어가자는', '얼었던 손부터 녹인다', '추웠던 이야기만 하다 보니 마음은 좀 풀린다'],
+  ['❄☃⛄🧣🧤', '찬 공기에 몸을 움츠리다가', '따뜻한 데로 들어가자는', '얼었던 손부터 녹인다', '몸이 따뜻해지니 기분도 한결 나아진다'],
   ['🫠😩😮‍💨😴🥱', '하루가 길어 좀 지친 채로', '오늘은 무리하지 말자는', '하던 걸 내려놓고 잠깐 쉬어 간다', '미뤄도 괜찮았던 일이 하나 떠오른다'],
   ['😩', '피곤한 티를 숨기려다가', '얼굴에 피곤한 티가 다 난다는', '결국 하던 일을 접고 한숨 돌린다', '한 번 쉬고 나니 못 할 일도 아니었다는 생각이 든다'],
   ['🙂😊🥰😁😄', '별일 없이 기분이 괜찮던 참에', '같이 있으면 편하다는', '별 얘기 없이 웃다가 시간을 보낸다', '무슨 얘기였는지는 잊고 표정만 기억한다'],
-  ['😂🤣😆', '별것 아닌 일에 웃음이 터진 채로', '아까 그 얘기를 다시 해달라는', '같은 이야기로 두 번 더 웃는다', '헤어지고 나서도 그 대목이 떠올라 웃는다'],
+  ['😂🤣😆', '가볍게 농담 한마디를 던졌다가', '아까 그 얘기를 다시 해달라는', '별 얘기 아닌데 웃음이 터진다', '헤어지고 나서도 그 대목이 떠올라 웃는다'],
   ['😭🥹😢', '괜히 마음이 울컥하던 참에', '괜찮은 척 안 해도 된다는', '미뤄 두었던 얘기를 조금 꺼낸다', '해결된 건 없어도 한결 가벼워진 채 돌아온다'],
   ['💬📱📞💌✉', '휴대폰을 뒤집어 두려던 참에', '지금 잠깐 볼 수 있냐는', '메시지 한 줄에 답하느라 걸음을 멈춘다', '평소라면 넘겼을 연락에 한마디 더 보낸다'],
   ['👀👁🤔', '눈에 밟히는 게 하나 있어 멈췄다가', '저쪽을 한번 봐보라는', '지나쳤던 것을 다시 보러 돌아선다', '처음엔 못 봤던 작은 디테일을 기억한다'],
@@ -131,11 +131,10 @@ const sceneLabels = {
   emojis: '입력한 이모지 네 개를 문자로 그린 장면'
 };
 
+const christmasEveDate = '2026-12-24';
 const defaultFortuneDate = '2026-12-25';
 function isFortuneDate(value) {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(value + 'T00:00:00Z');
-  return Number.isFinite(+date) && date.toISOString().slice(0, 10) === value;
+  return value === christmasEveDate || value === defaultFortuneDate;
 }
 function fortuneDateLabel(value) {
   const [, month, day] = value.split('-').map(Number);
@@ -166,6 +165,9 @@ const emojiHooks = {
   '💬': '그 메시지는 걸음을 멈추게 한다',
   '👻': '연락이 끊겼던 사람이 다시 나타난다',
   '💀': '끝까지 진지한 척하기는 어렵다',
+  '😂': '웃을 타이밍은 따로 있다',
+  '🤣': '웃을 타이밍은 따로 있다',
+  '😆': '웃을 타이밍은 따로 있다',
   '🚌': '서두르지 마라. 차 한 대는 보내도 된다',
   '🎁': '포장 안에는 예상과 다른 게 있다',
   '🎄': '불이 켜질 때까진 자리를 뜨지 마라',
@@ -184,22 +186,47 @@ const storyTypes = [
   {id: 'afterthought', titles: ['돌아와서야 생각나는 순간이 있다', '별일 아닌 일이 오래 남는다']}
 ];
 
+// Each pair assigns a different emoji to every role on the two dates.
+// The roles are setup, message, action, and ending.
+const seasonalRoleOrders = [
+  {eve: [1, 3, 0, 2], christmas: [0, 1, 2, 3]},
+  {eve: [3, 0, 2, 1], christmas: [2, 1, 3, 0]},
+  {eve: [1, 2, 3, 0], christmas: [3, 0, 1, 2]}
+];
+
+function composeFortuneStory([setupClue, messageClue, turnClue, endingClue], seed) {
+  const setup = setupClue?.[1] || '여느 때처럼 하루를 보내다가';
+  const message = messageClue ? `${messageClue[2]} 말을 듣는다` : '뜻밖의 연락을 받는다';
+  const turn = turnClue ? turnClue[3] : ['잠깐 하려던 얘기가 길어진다', '별것 아닌 한마디에 기분이 풀린다', '헤어지기 직전에 한마디 더 보탠다'][(seed >>> 8) % 3];
+  const ending = endingClue?.[4] || '집에 와서도 그때 들은 한마디가 생각난다';
+  return `${setup} ${message}.\n\n${turn}. ${ending}.`;
+}
+
 function makeFortune(emojis, date = defaultFortuneDate) {
+  if (!isFortuneDate(date)) date = defaultFortuneDate;
   const normalized = emojis.map(normalizeFortuneEmoji);
-  const [first, second, third, fourth] = normalized.map(resolveFortuneClue);
-  const scene = third?.[5] || fourth?.[5] || second?.[5] || first?.[5] || 'emojis';
-  const seed = Array.from([date, ...normalized].join('|')).reduce((hash, char) =>
+  const clues = normalized.map(resolveFortuneClue);
+  const seed = Array.from(normalized.join('|')).reduce((hash, char) =>
     (Math.imul(hash, 31) + char.codePointAt(0)) >>> 0, 0);
-  const setup = first ? first[1] : '여느 때처럼 하루를 보내다가';
-  const message = second ? `${second[2]} 말을 듣는다` : '뜻밖의 연락을 받는다';
-  const turn = third ? third[3] : ['잠깐 하려던 얘기가 길어진다', '별것 아닌 한마디에 기분이 풀린다', '헤어지기 직전에 한마디 더 보탠다'][(seed >>> 8) % 3];
-  const ending = fourth ? fourth[4] : '집에 와서도 그때 들은 한마디가 생각난다';
+  const {eve, christmas} = seasonalRoleOrders[seed % seasonalRoleOrders.length];
+  const isEve = date === christmasEveDate;
+  const order = isEve ? eve : christmas;
+  const roles = order.map(index => clues[index]);
+  const [setupClue, messageClue, turnClue, endingClue] = roles;
+  const scene = turnClue?.[5] || endingClue?.[5] || messageClue?.[5] || setupClue?.[5] || 'emojis';
+  const turnEmoji = normalized[order[2]];
+  let story = composeFortuneStory(roles, seed);
+  const otherOrder = isEve ? christmas : eve;
+  if (story === composeFortuneStory(otherOrder.map(index => clues[index]), seed)) {
+    const opening = isEve ? '크리스마스이브에는' : '크리스마스 당일에는';
+    story = `${opening} ${story}`;
+  }
   const type = storyTypes[seed % storyTypes.length];
-  const title = emojiHooks[third?.[0]] || emojiHooks[normalized[2]] ||
-    third?.[6] || type.titles[(seed >>> 6) % type.titles.length];
+  const title = emojiHooks[turnClue?.[0]] || emojiHooks[turnEmoji] || turnClue?.[6] ||
+    type.titles[(seed >>> 6) % type.titles.length];
   return {
     date, emoji: emojis.join(' '), emojis, art: scene, artLabel: sceneLabels[scene],
     title, type: type.id,
-    story: `${setup} ${message}.\n\n${turn}. ${ending}.`, product: ''
+    story, product: ''
   };
 }
