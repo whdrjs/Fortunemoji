@@ -29,9 +29,18 @@ const story = (title, first, last, art = 'emojis') => ({
 // Complete scenes for combinations that recur in the preview and introduction.
 const featuredScenes = [
   {
+    emojis: '😂 ☕ 🐱 🎧',
+    eve: story('이어폰을 빼자 커피가 두 잔 놓인다',
+      '카페 창가에서 이어폰을 낀 채 커피를 기다린다. 바깥 난간을 지나던 고양이가 유리에 비친 자기 얼굴을 보고 뒤로 펄쩍 뛴다. 웃음이 터져 이어폰을 뺀다.',
+      '옆에 선 사람이 같은 곳을 보고 웃는다. 카운터에서 이름을 부르자 둘 다 일어난다. 커피도, 주문할 때 댄 이름도 같다.', 'cafe'),
+    day: story('커피가 식는 동안 고양이가 손님을 들인다',
+      '아침 커피를 내려놓고 이어폰을 낀다. 창밖 고양이가 자꾸 입을 벌려서, 소리를 들으려고 한쪽을 뺀다. 그제야 현관 밖에서 웃는 소리가 들린다.',
+      '문을 열었더니 친구가 쭈그리고 앉아 고양이에게 인사하는 중이다. “얘한테는 들렸는데 너는 왜 안 나와?” 커피 한 잔을 더 내린다.', 'home')
+  },
+  {
     emojis: '☕ 🫠 💬 🚪',
     eve: story('집에 다 왔는데 약속이 잡힌다',
-      '현관 비밀번호를 누르는데 휴대폰이 울린다. “커피 한 잔만?” 문을 열고 가방만 내려놓는다. 신발은 그대로 신고 있다.',
+      '현관 앞에서 비밀번호를 한 번 틀린다. 너무 피곤해서 저녁도 건너뛸 참인데 전화가 울린다. “커피 한 잔만?” 문을 열고 가방만 내려놓는다. 신발은 그대로 신고 있다.',
       '커피는 약속대로 한 잔만 마신다. 저녁을 어디서 먹을지는 그다음에 정한다.', 'cafe'),
     day: story('커피가 먼저 도착한다',
       '늦잠에서 깨 휴대폰을 켠다. “아직 자면 답장하지 마. 문 앞에 커피 두고 간다.” 현관문을 열자 종이컵 두 개가 놓여 있다.',
@@ -41,7 +50,7 @@ const featuredScenes = [
     emojis: '❤️ 😩 🍽️ 💀',
     eve: story('접시가 오기도 전에 다 먹는다',
       '퇴근하자마자 식당으로 간다. 맞은편 사람이 메뉴판을 넘기며 묻는다. “너 피곤하면 밥만 먹고 갈까?” 고개를 끄덕이자 바로 접시 하나를 더 달라고 한다.',
-      '접시가 오기 전에 둘이 한 접시를 다 비운다. 사진은 남았다. 상대가 마지막 한 입을 가져가는 순간이다. 그걸 보낸 사람도 마지막 한 입을 가져간 사람이다.', 'emojis'),
+      '접시가 오기 전에 상대가 내 몫까지 먹는다. 미안하다며 빵 위에 남은 잼을 하트 모양으로 짜 놓는다. 어이가 없어서 웃다가 빵까지 집어 먹는다.', 'emojis'),
     day: story('하트는 디저트에 보낸 거다',
       '늦은 점심 끝에 디저트 접시를 당긴다. “아까 하트, 나한테 보낸 거 아니었어?” 숟가락을 드는 것도 귀찮아 고개만 젓는다.',
       '아까 보낸 사진을 다시 보니 하트는 맞은편 사람 얼굴 바로 위에 붙어 있다. 웃음이 나서 숟가락을 내려놓는다. 그사이 마지막 한 입이 사라진다.', 'emojis')
@@ -52,7 +61,7 @@ const featuredScenes = [
       '며칠째 답이 없던 사람이 약속 장소에 먼저 와 있다. 고개를 살짝 끄덕이고 주문부터 한다. 분명 태연하게 들어왔는데 상대가 웃자 눈이 먼저 젖는다.',
       '집에 가는 길에 둘이 찍은 사진을 받는다. 상대가 붙인 하트가 두 개다. 같은 사진을 이미 저장해 둔 걸, 두 번째로 저장하고서야 안다.'),
     day: story('안 울었다고 보낸 사진에 들킨다',
-      '아침에 안부를 기다리던 사람이 보낸 영상이 도착한다. 작년 크리스마스에 둘이 찍은 영상이다. 울지 않았다는 말과 함께 선글라스 낀 사진을 한 장 보낸다.',
+      '며칠째 연락 없던 사람이 아침에 영상을 보내온다. 작년 크리스마스에 둘이 찍은 영상이다. 울지 않았다는 말과 함께 선글라스 낀 사진을 한 장 보낸다.',
       '그 사람이 사진에 하트 두 개를 단다. 그리고 선글라스 아래 삐져나온 휴지 끝에 동그라미를 쳐서 돌려보낸다.')
   },
   {
@@ -94,28 +103,106 @@ function findCue(emoji) {
   return {key, ...(namedClues.get(key) || namedClues.get(base) || namedClues.get(neutral))};
 }
 
-// Details are standalone so they can fit more than one setting.
-const sceneDetails = new Map([
-  ['❄', '밖에는 눈이 내린다.'],
-  ['🌧', '젖은 우산을 한 손에서 다른 손으로 옮긴다.'],
-  ['🧣', '목도리를 턱 밑까지 끌어올린다.'],
-  ['😎', '선글라스를 머리 위로 올린다.'],
-  ['🫠', '화면을 보다가 눈을 한 번 꾹 감는다.'],
-  ['😩', '한숨부터 나온다.'],
-  ['😴', '하품이 나와 화면을 잠깐 덮는다.'],
-  ['😂', '화면을 보다 소리 내서 웃는다.'],
-  ['🤣', '웃다가 휴대폰을 떨어뜨릴 뻔한다.'],
-  ['🥹', '화면이 흐려져 눈을 두 번 깜빡인다.'],
-  ['☕', '커피에서 김이 나지 않는다.'],
-  ['🎧', '이어폰을 한쪽만 뺀다.'],
-  ['🐱', '방금 받은 고양이 사진이 화면에 떠 있다.'],
-  ['🐶', '강아지 사진을 받은 지 몇 초도 안 됐다.']
+// Common chat reactions usually mean more than their literal shapes.
+const reactionsByEmoji = new Map([
+  ['❤', '보고 싶다는 말을 꺼내려다 입을 다문다.'],
+  ['💕', '괜히 더 가까이 앉고 싶어진다.'],
+  ['😂', '웃음을 못 참고 고개를 돌린다.'],
+  ['🤣', '한 번 터진 웃음이 한참 동안 멎지 않는다.'],
+  ['😍', '말을 잊고 한참 들여다본다.'],
+  ['😭', '괜찮다고 하려는데 목소리가 먼저 잠긴다.'],
+  ['🥹', '울컥하는 걸 감추려고 눈을 두 번 깜빡인다.'],
+  ['😊', '말없이 입꼬리를 올린다.'],
+  ['🙂', '괜찮다는 듯 살짝 웃는다.'],
+  ['😬', '어색하게 웃고 시선을 피한다.'],
+  ['🫠', '기운이 빠져 한동안 아무 말도 못 한다.'],
+  ['😩', '힘이 풀려 어깨가 축 처진다.'],
+  ['😴', '하품을 삼키며 눈을 비빈다.'],
+  ['🙄', '한마디 하려다 눈만 굴린다.'],
+  ['😤', '콧김부터 내쉬고 할 말을 고른다.'],
+  ['🫨', '화들짝 놀라 들고 있던 걸 내려놓는다.'],
+  ['💀', '어이가 없어 입을 다물었다가 피식 웃는다.'],
+  ['💔', '섭섭하다는 말이 목 끝까지 올라온다.'],
+  ['😎', '애써 태연한 척한다.'],
+  ['🙏', '이번 한 번만이라며 두 손을 모은다.'],
+  ['🔥', '별 기대 없이 왔다가 슬슬 진심이 된다.'],
+  ['👀', '아무렇지 않은 척 곁눈질한다.'],
+  ['👍', '고민은 그만하고 좋다고 대답한다.'],
+  ['👏', '생각보다 잘 풀려 박수가 먼저 나온다.'],
+  ['🤦', '뒤늦게 무슨 일이 벌어졌는지 알고 이마를 짚는다.'],
+  ['🤷', '영문을 모르겠다는 듯 어깨를 으쓱한다.'],
+  ['🙌', '잘됐다 싶어 양손을 든다.'],
+  ['💯', '더 고칠 데가 없겠다 싶어 고개를 끄덕인다.']
 ]);
 
-function withDetail(scene, cues, isEve) {
-  const order = isEve ? cues : [...cues].reverse();
-  const detail = order.map(cue => sceneDetails.get(cue.key)).find(Boolean);
-  return detail ? {...scene, story: detail + ' ' + scene.story} : scene;
+const momentsByEmoji = new Map([
+  ['❄', '눈발이 잠깐 굵어진다.'],
+  ['🌧', '손잡이에서 떨어지는 빗물을 털어낸다.'],
+  ['🧣', '목도리를 턱 밑까지 끌어올린다.'],
+  ['☕', '한 모금 남은 커피는 이미 식었다.'],
+  ['🎧', '주변 소리를 들으려고 이어폰을 한쪽 뺀다.'],
+  ['🐱', '근처에 있던 고양이가 발끝을 스치고 지나간다.'],
+  ['🐶', '어디선가 강아지가 짧게 한 번 짖는다.'],
+  ['🎄', '멀리 크리스마스트리 불빛이 깜빡인다.'],
+  ['🎁', '구겨진 선물 포장지를 손바닥으로 편다.'],
+  ['💬', '미처 마치지 못한 대화가 생각난다.'],
+  ['👻', '한동안 잠수 탔던 사람 이름이 화면에 뜬다.'],
+  ['🚪', '닫힌 문 너머에서 발소리가 들린다.'],
+  ['🪾', '잎이 다 떨어진 나무 사이로 바람이 분다.']
+]);
+
+const countryLabels = new Intl.DisplayNames('ko', {type: 'region', fallback: 'none'});
+const expressionBeats = [
+  [/웃|미소|썩소|히죽/, '입꼬리가 올라가는 걸 숨기려고 고개를 돌린다.'],
+  [/울|눈물|괴로|실망/, '입을 열었다가 아무 말 없이 숨을 고른다.'],
+  [/불안|걱정|식은땀|두려/, '손에 땀이 차서 바지에 손바닥을 훔친다.'],
+  [/피곤|졸/, '눈꺼풀이 자꾸 내려앉는다.'],
+  [/화난|욕|뾰로통|찡/, '미간을 찌푸리고 할 말을 고른다.'],
+  [/놀란|절규|입벌|입 벌|혼란|폭발/, '뭐라고 답할지 몰라 입만 벌린다.'],
+  [/키스|포옹|반한|하트/, '한 걸음 더 가까이 가고 싶어진다.'],
+  [/생각|덤덤|무표정|눈썹/, '한쪽 눈썹을 올리고 잠깐 생각한다.'],
+  [/쉿|입을 잠|입을 가|입을 막/, '입술에 손가락을 대고 조용히 하라는 눈짓을 보낸다.'],
+  [/혀를 내|메롱|윙크|괴짜/, '장난 섞인 눈짓을 한 번 보낸다.']
+];
+
+function interpretCue(cue) {
+  const reaction = reactionsByEmoji.get(cue.key);
+  if (reaction) return {reaction};
+  const moment = momentsByEmoji.get(cue.key);
+  if (moment) return {moment};
+  const keycap = /^([0-9#*])\u20e3$/u.exec(cue.key);
+  if (keycap) return {moment: `화면에서 ${keycap[1]} 표시가 눈에 들어온다.`};
+  if (!cue.name) return {moment: '잘못 본 줄 알고 휴대폰 화면을 다시 켠다.'};
+
+  if (cue.kind === 'country') {
+    const place = /^[A-Z]{2}$/.test(cue.name)
+      ? countryLabels.of(cue.name) || cue.name
+      : cue.name.replace(/^깃발: /, '');
+    return {moment: `예전에 저장해 둔 ${place} 사진이 문득 생각난다.`};
+  }
+  if (cue.kind === 'expression' || cue.kind === 'mood') {
+    const beat = expressionBeats.find(([pattern]) => pattern.test(cue.name));
+    if (beat) return {reaction: beat[1]};
+  }
+  if (cue.kind === 'weather' || cue.kind === 'sky') return {moment: `창밖으로 ${cue.name} 풍경이 보인다.`};
+  return {object: cue.name};
+}
+
+function joinObjects(objects) {
+  const last = objects.at(-1);
+  return objects.length < 2 ? last : objects.slice(0, -1).join(', ') + ', 그리고 ' + last;
+}
+
+function weaveCues(scene, cues, isEve) {
+  const items = (isEve ? cues : [...cues].reverse()).map(interpretCue);
+  const moments = items.flatMap(item => item.moment ? [item.moment] : []);
+  const props = items.flatMap(item => item.object ? [item.object] : []);
+  const reactions = items.flatMap(item => item.reaction ? [item.reaction] : []);
+  const [opening, ending] = scene.story.split('\n\n');
+  const propLine = props.length ? `시선이 ${joinObjects(props)} 쪽에 잠깐 머문다.` : '';
+  const first = [opening, ...moments, propLine].filter(Boolean).join(' ');
+  const last = [...reactions, ending].join(' ');
+  return {...scene, story: first + '\n\n' + last};
 }
 
 const seasonalScenes = [
@@ -212,11 +299,11 @@ function makeFortune(emojis, date = defaultFortuneDate) {
     if (match) {
       const {cue, index, candidate} = match;
       const supportingCues = cues.filter((_, i) => i !== index);
-      scene = withDetail((isEve ? candidate.eve : candidate.day)(cue), supportingCues, isEve);
+      scene = weaveCues((isEve ? candidate.eve : candidate.day)(cue), supportingCues, isEve);
     } else {
       const variant = otherScenes[seed % otherScenes.length];
-      scene = withDetail(isEve ? variant.eve : variant.day, cues, isEve);
+      scene = weaveCues(isEve ? variant.eve : variant.day, cues, isEve);
     }
   }
-  return {date, emoji: emojis.join(' '), emojis, ...scene, artLabel: sceneLabels[scene.art]};
+  return {date, emojis, ...scene, artLabel: sceneLabels[scene.art]};
 }

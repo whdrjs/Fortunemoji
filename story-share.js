@@ -55,8 +55,6 @@ async function makeStoryImage(sample, paintArt) {
   const date = sample.date ? `미래 기록 · ${fortuneDateLabel(sample.date)}` : '미래 기록';
   const metaFont = `500 36px ${storyFont}`;
   text(date, left, 343, metaFont, secondary);
-  const emojiLeft = left + ctx.measureText(date).width + 32;
-  text(sample.emoji, emojiLeft, 337, '44px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif', ink);
 
   function layout(value, size, weight, color, availableHeight) {
     let rows;

@@ -144,7 +144,6 @@ function paintCard(node, sample) {
     date.dateTime = sample.date;
     meta.append(date);
   }
-  meta.append(makeText('p', 'post-emojis', sample.emoji));
   content.append(
     meta,
     makeText('h2', 'post-title', sample.title),
