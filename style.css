@@ -274,7 +274,20 @@ h1, h2 { margin: 0; font-size: clamp(1.32rem, 5.55vw, 2rem); line-height: 1.36; 
 }
 #home-ad-slot, #result-ad-slot { --slot-height: 64px; }
 #waiting-ad-slot { --slot-height: 72px; }
-#result-affiliate-slot { --slot-height: 88px; }
+.affiliate-slot iframe {
+  display: block;
+  max-width: 100%;
+  margin: 6px auto 0;
+  border: 0;
+}
+.affiliate-disclosure {
+  margin: 0;
+  color: var(--muted);
+  font-size: .8125rem;
+  line-height: 1.5;
+  text-align: center;
+  word-break: keep-all;
+}
 .slot-preview {
   display: grid;
   align-content: center;
