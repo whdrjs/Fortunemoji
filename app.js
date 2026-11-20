@@ -70,7 +70,9 @@ const previewFortune = {emojis: ['❤️', '😩', '🍽️', '💀'], date: def
 const previewNav = get('layout-preview-nav');
 const previewLinks = previewNav.querySelectorAll('a');
 previewNav.hidden = !layoutPreview;
-document.querySelectorAll('.monetization-slot').forEach(slot => { slot.hidden = !layoutPreview; });
+document.querySelectorAll('.monetization-slot > .slot-preview').forEach(preview => {
+  preview.parentElement.hidden = !layoutPreview;
+});
 const waitingProgress = get('waiting-progress');
 const privacyLink = get('privacy-link');
 const privacyReturn = get('privacy-return');
