@@ -1,15 +1,9 @@
-# Formoji
+# 포모지 (For-moji)
 
-Four emojis, one made-up forecast. This repository contains the static website files for Formoji.
+최근에 쓴 이모지 네 개로 크리스마스를 살짝 스포해요. 고른 이모지를 엮어 그날 일어날 법한 일을 짧은 점괘와 움직이는 문자 그림으로 보여줘요.
 
-## Deploy with GitHub Pages
+## 사용 방법
 
-The site is published from the repository root by the GitHub Actions workflow in `.github/workflows/pages.yml`.
-
-For the first deployment, open **Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions**. Later pushes to `main` deploy automatically.
-
-The site uses relative asset URLs so it works at the project Pages URL: `https://whdrjs.github.io/Fotunemoji/`.
-
-## Files
-
-The HTML, CSS, JavaScript, and static assets are at the repository root. No build step or API key is required.
+1. 크리스마스이브(12월 24일)와 크리스마스(12월 25일) 중 하루를 고르세요.
+2. 최근에 쓴 이모지 네 개를 입력하거나 붙여넣으세요.
+3. **점괘 뽑기**를 눌러 내 크리스마스 스포를 확인하세요.
