@@ -52,10 +52,10 @@ async function makeStoryImage(sample, paintArt) {
   text('Formoji', left, 236, `800 48px ${storyFont}`, ink);
   ctx.fillStyle = '#344256';
   ctx.fillRect(left, 309, innerWidth, 2);
-  const date = sample.date ? fortuneDateLabel(sample.date) : '';
+  const date = sample.date ? `미래 기록 · ${fortuneDateLabel(sample.date)}` : '미래 기록';
   const metaFont = `500 36px ${storyFont}`;
   text(date, left, 343, metaFont, secondary);
-  const emojiLeft = date ? left + ctx.measureText(date).width + 24 : left;
+  const emojiLeft = left + ctx.measureText(date).width + 32;
   text(sample.emoji, emojiLeft, 337, '44px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif', ink);
 
   function layout(value, size, weight, color, availableHeight) {
@@ -88,7 +88,7 @@ async function makeStoryImage(sample, paintArt) {
 
   ctx.fillStyle = '#344256';
   ctx.fillRect(left, 1590, innerWidth, 2);
-  text('이모지 네 개로 보는 그날의 점괘', left, 1614, `500 36px ${storyFont}`, secondary);
+  text('이모지 네 개로 보는 미래 장면', left, 1614, `500 36px ${storyFont}`, secondary);
 
   return new Promise((resolve, reject) => {
     card.toBlob(blob => {

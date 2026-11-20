@@ -1,24 +1,9 @@
 'use strict';
 
-// Scene presets for the local design preview.
 const samples = [
-  {
-    emoji: '☕ 👀 🛋️ 💬',
-    title: '커피 한 잔 하자는 말에\n결국 집을 나섭니다.',
-    story: '소파에 누워 있는데 메시지가 옵니다. “잠깐 커피?” 창밖은 어둡고, 오늘은 집에만 있을 생각이었는데. 어느새 코트를 입고 골목 끝 카페로 향하고 있네요.',
-    art: 'cafe',
-    artLabel: '푸른 문자 사이로 따뜻한 불빛이 새어 나오는 밤의 카페'
-  },
-  {
-    emoji: '🚌 ❄️ ☕ 🧣', title: '버스 두 대를\n그냥 보냈다.',
-    story: '눈 오는 정류장에서 목도리 하나를 둘이 나눠 맸다. 커피가 다 식을 때까지 둘 다 버스 오는 쪽을 안 봤다.',
-    art: 'bus', artLabel: '문자로 그린 눈 내리는 버스 정류장'
-  },
-  {
-    emoji: '🏠 🥂 🛏️ 🌅', title: '한 잔만 한다더니\n우리 집에서 해 뜸.',
-    story: '자정에 막차 시간을 찾아봤고, 한 시엔 이불을 세 장 더 꺼냈다. 크리스마스 아침 메뉴는 만장일치로 라면.',
-    art: 'home', artLabel: '문자로 그린 해 뜨는 크리스마스 아침의 집'
-  }
+  makeFortune(['☕', '🫠', '💬', '🚪'], christmasEveDate),
+  makeFortune(['🚌', '❄️', '☕', '🧣'], christmasEveDate),
+  makeFortune(['🏠', '🥂', '🛏️', '🌅'], defaultFortuneDate)
 ];
 const get = id => document.getElementById(id);
 const input = get('emoji-entry');
@@ -121,9 +106,9 @@ function applyInput(value) {
   if (clean !== previous) inputArt.play(Math.max(0, entered.length - 1));
   if (input.value !== clean) input.value = clean;
   feedback.textContent = oversized ? '붙여넣은 내용이 너무 길어요. 이모지 네 개만 넣어주세요.' :
-    hasDuplicateEmoji(entered) ? '장난하냐? 같은 이모지가 있잖아. 겹친 거 빼고 네 개 다시 골라.' :
-    valid.length > 4 ? '이모지 중 처음 네 개만 남겼어요.' :
-    parts.length !== valid.length ? '이모지만 넣어주세요.' : '';
+    hasDuplicateEmoji(entered) ? '같은 이모지가 있어요. 서로 다른 네 개를 넣어주세요.' :
+    valid.length > 4 ? '처음 네 개만 남겼어요.' :
+    parts.length !== valid.length ? '이모지만 입력할 수 있어요.' : '';
   input.setAttribute('aria-invalid', String(Boolean(feedback.textContent)));
   get('entry-wrap').classList.toggle('invalid', Boolean(feedback.textContent));
   get('counter').textContent = entered.length + ' / 4';
@@ -155,7 +140,7 @@ function paintCard(node, sample) {
   const meta = document.createElement('div');
   meta.className = 'result-meta';
   if (sample.date) {
-    const date = makeText('time', 'result-date', fortuneDateLabel(sample.date));
+    const date = makeText('time', 'result-date', `미래 기록 · ${fortuneDateLabel(sample.date)}`);
     date.dateTime = sample.date;
     meta.append(date);
   }
@@ -195,7 +180,7 @@ function prepareStoryShare(sample, art) {
     saveStoryButton.disabled = false;
   }).catch(() => {
     if (sharePreparation === preparation) {
-      shareNote.textContent = '이미지를 만들지 못했어요. 결과를 새로고침해 주세요.';
+      shareNote.textContent = '이미지를 만들지 못했어요. 이 페이지를 새로고침해 주세요.';
     }
   });
 }
@@ -219,7 +204,7 @@ shareStoryButton.addEventListener('click', async () => {
   if (!file) return;
   const payload = {files: [file]};
   if (navigator.share && navigator.canShare?.(payload)) {
-    shareNote.textContent = '공유 메뉴에서 Instagram 스토리를 찾아보세요.';
+    shareNote.textContent = '공유 메뉴에서 인스타그램 스토리를 선택하세요.';
     try {
       await navigator.share(payload);
       return;
@@ -257,6 +242,7 @@ function renderRoute(change) {
   const hash = location.hash.slice(1);
   const card = /^card-([1-3])$/.exec(hash);
   cancelAnimationFrame(transitionFrame);
+  get('change-date').hidden = hash !== 'result' || !submitted;
   resetStoryShare();
   if (supportDialog.open) supportDialog.close();
   const fortuneInput = submitted ?? (layoutPreview ? previewFortune : null);
@@ -272,7 +258,7 @@ function renderRoute(change) {
     const sampleRoute = hash.startsWith('privacy-card-');
     const fromResult = sampleRoute || (hash === 'privacy-result' && fortuneInput);
     privacyReturn.href = fromResult ? '#' + hash.slice('privacy-'.length) : '#home';
-    privacyReturn.textContent = fromResult ? '점괘 결과로 돌아가기' : '메인으로 돌아가기';
+    privacyReturn.textContent = fromResult ? '미래 기록으로 돌아가기' : '메인으로 돌아가기';
   }
   previewLinks.forEach(link => {
     if (link.hash === '#' + view) link.setAttribute('aria-current', 'page');
@@ -294,10 +280,11 @@ function renderRoute(change) {
     readingArt = GlyphArt.mount(get('reading-signal'), 'reading', fortune.art, fortune.emojis);
     readingArt.show();
     get('waiting-emojis').replaceChildren(...fortuneInput.emojis.map(emoji => makeText('span', 'signal-emoji', emoji)));
+    get('waiting-title').textContent = `${fortuneDateLabel(fortune.date)}의 장면을 구성하는 중`;
     const waitingStage = get('waiting-stage');
     const stages = [
-      '네 이모지에서 이야기의 단서를 찾는 중',
-      '단서를 이어 한 장면을 만드는 중',
+      '이모지에서 단서를 읽는 중',
+      '단서를 이어 사건을 구성하는 중',
       '장면을 문자 그림으로 그리는 중'
     ];
     waitingStage.textContent = stages[layoutPreview ? 1 : 0];
@@ -345,10 +332,20 @@ input.addEventListener('keydown',event => {if(event.key === 'Enter' && !startBut
 get('clear').addEventListener('click',() => { applyInput('');input.focus(); });
 startButton.addEventListener('click', () => {
   if (!canStartFortune()) return;
-  submitted = {emojis: entered.slice(), date: dateInput.value};
+  showFortune(entered, dateInput.value);
+});
+get('change-date').addEventListener('click', () => {
+  if (!submitted) return;
+  const date = submitted.date === christmasEveDate ? defaultFortuneDate : christmasEveDate;
+  applyInput(submitted.emojis.join(''));
+  dateInput.value = date;
+  showFortune(submitted.emojis, date);
+});
+function showFortune(emojis, date) {
+  submitted = {emojis: emojis.slice(), date};
   try { sessionStorage.setItem(fortuneKey, JSON.stringify(submitted)); } catch {}
   location.hash = 'waiting';
-});
+}
 const motionToggle = get('motion-toggle');
 function updateMotionButton() {
   const enabled = GlyphArt.motionEnabled();
