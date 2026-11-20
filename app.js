@@ -294,17 +294,31 @@ function renderRoute(change) {
     readingArt = GlyphArt.mount(get('reading-signal'), 'reading', fortune.art, fortune.emojis);
     readingArt.show();
     get('waiting-emojis').replaceChildren(...fortuneInput.emojis.map(emoji => makeText('span', 'signal-emoji', emoji)));
+    const waitingStage = get('waiting-stage');
+    const stages = [
+      '네 이모지에서 이야기의 단서를 찾는 중',
+      '단서를 이어 한 장면을 만드는 중',
+      '장면을 문자 그림으로 그리는 중'
+    ];
+    waitingStage.textContent = stages[layoutPreview ? 1 : 0];
     waitingProgress.value = layoutPreview ? .6 : 0;
     if (!layoutPreview) {
       const started = performance.now();
-      const duration = GlyphArt.motionEnabled() ? 1100 : 0;
+      const duration = GlyphArt.motionEnabled() ? 8100 : 0;
+      let stageIndex = 0;
       function advance(now) {
         if (location.hash !== '#waiting') return;
         if (now - started >= duration) {
           waitingProgress.value = 1;
           location.replace('#result');
         } else {
-          waitingProgress.value = (now - started) / duration;
+          const progress = (now - started) / duration;
+          waitingProgress.value = progress;
+          const nextStage = Math.floor(progress * stages.length);
+          if (nextStage !== stageIndex) {
+            stageIndex = nextStage;
+            waitingStage.textContent = stages[stageIndex];
+          }
           transitionFrame = requestAnimationFrame(advance);
         }
       }

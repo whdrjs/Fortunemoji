@@ -6,13 +6,13 @@
   <title>Formoji · 이모지로 보는 크리스마스 예언</title>
   <meta name="description" content="이모지로 보는 크리스마스 예언. 최근에 쓴 이모지 네 개로 원하는 날의 점괘를 뽑아보세요. 짧은 이야기와 움직이는 문자 그림으로 보여드려요.">
   <meta name="theme-color" content="#080d18">
-  <link rel="icon" href="mark.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css?v=26">
+  <link rel="icon" href="mark.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css?v=27">
   <script src="glyph-art.js?v=21" defer></script>
   <script src="text-tree.js?v=14" defer></script>
   <script src="emoji-frequency.js?v=1" defer></script>
   <script src="fortune.js?v=23" defer></script>
   <script src="story-share.js?v=2" defer></script>
-  <script src="app.js?v=27" defer></script>
+  <script src="app.js?v=28" defer></script>
 </head>
 <body>
 <svg class="definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -67,16 +67,20 @@
       <div class="stage-content">
         <h2 id="waiting-title" tabindex="-1">이모지로 이야기를 만드는 중</h2>
         <div class="waiting-emojis" id="waiting-emojis"></div>
+        <p id="waiting-stage" class="subtitle waiting-stage" role="status">네 이모지에서 이야기의 단서를 찾는 중</p>
         <progress id="waiting-progress" class="waiting-progress" aria-label="점괘 준비 진행률" max="1" value="0"></progress>
       </div>
-      <aside id="waiting-ad-slot" class="ad-slot monetization-slot" aria-label="대기 배너 또는 협찬 안내" hidden>
-        <div class="slot-preview"><strong>대기 배너 · 협찬 안내</strong><span>가로 최대 480px · 높이 72px</span></div>
-      </aside>
       <div class="stage-content">
         <div class="stage-actions">
           <a class="secondary" href="#home">이모지 입력으로 돌아가기</a>
+          <a class="secondary" href="#result">결과 바로 보기</a>
         </div>
       </div>
+      <aside id="waiting-affiliate-slot" class="affiliate-slot monetization-slot" aria-label="쿠팡 파트너스 광고">
+        <p class="affiliate-disclosure">이 사이트는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+        <iframe src="https://ads-partners.coupang.com/widgets.html?id=1052402&amp;template=carousel&amp;trackingCode=AF9003982&amp;subId=&amp;width=280&amp;height=140&amp;tsource="
+          title="쿠팡 추천 홈인테리어 상품" width="280" height="140" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </aside>
     </section>
     <section id="result-view" class="separate-view" aria-label="점괘 결과" hidden>
       <article id="story-card" class="story-card"></article>
@@ -91,11 +95,6 @@
         <p class="subtitle" id="share-note" role="status"></p>
         <input type="text" id="home-link-value" aria-label="복사할 메인 링크" readonly hidden>
       </div>
-      <aside id="result-affiliate-slot" class="affiliate-slot monetization-slot" aria-label="쿠팡 파트너스 광고">
-        <p class="affiliate-disclosure">이 사이트는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
-        <iframe src="https://ads-partners.coupang.com/widgets.html?id=1052402&amp;template=carousel&amp;trackingCode=AF9003982&amp;subId=&amp;width=280&amp;height=140&amp;tsource="
-          title="쿠팡 추천 홈인테리어 상품" width="280" height="140" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-      </aside>
       <aside id="result-ad-slot" class="ad-slot monetization-slot" aria-label="결과 하단 광고 배너" hidden>
         <div class="slot-preview"><strong>결과 하단 광고 배너</strong><span>가로 최대 480px · 높이 64px</span></div>
       </aside>
