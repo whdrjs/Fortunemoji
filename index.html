@@ -6,7 +6,7 @@
   <title>Formoji · 크리스마스의 한 장면을 미리 봅니다</title>
   <meta name="description" content="최근에 쓴 이모지 네 개를 넣어보세요. 크리스마스이브와 크리스마스에 일어날 법한 일을 한 장면으로 보여드려요.">
   <meta name="theme-color" content="#080d18">
-  <link rel="icon" href="mark.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css?v=27">
+  <link rel="icon" href="mark.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css?v=28">
   <script src="glyph-art.js?v=21" defer></script>
   <script src="text-tree.js?v=14" defer></script>
   <script src="emoji-frequency.js?v=1" defer></script>
@@ -70,11 +70,9 @@
         <div class="waiting-emojis" id="waiting-emojis"></div>
         <p id="waiting-stage" class="subtitle waiting-stage" role="status">이모지에서 단서를 읽는 중</p>
         <progress id="waiting-progress" class="waiting-progress" aria-label="미래 장면 준비 진행률" max="1" value="0"></progress>
-      </div>
-      <div class="stage-content">
-        <div class="stage-actions">
+        <div class="stage-actions waiting-actions">
+          <a class="primary" href="#result">장면 바로 보기</a>
           <a class="secondary" href="#home">이모지 입력으로 돌아가기</a>
-          <a class="secondary" href="#result">장면 바로 보기</a>
         </div>
       </div>
       <aside id="waiting-affiliate-slot" class="affiliate-slot monetization-slot" aria-label="쿠팡 파트너스 광고">
@@ -86,16 +84,18 @@
     <section id="result-view" class="separate-view" aria-label="미래 기록" hidden>
       <article id="story-card" class="story-card"></article>
       <div class="stage-content result-actions">
-        <div class="stage-actions">
+        <div class="stage-actions share-actions">
           <button type="button" class="primary full" id="share-story" disabled>스토리에 공유</button>
           <button type="button" class="secondary" id="save-story" disabled>이미지 저장</button>
           <button type="button" class="secondary" id="copy-home">메인 링크 복사</button>
-          <a class="secondary" href="#input">이모지 바꿔 보기</a>
-          <button type="button" class="secondary" id="change-date" hidden>다른 날짜 보기</button>
-          <button type="button" class="secondary support-action" id="support-open">포모지 응원하기</button>
         </div>
         <p class="subtitle" id="share-note" role="status"></p>
         <input type="text" id="home-link-value" aria-label="복사할 메인 링크" readonly hidden>
+        <div class="stage-actions revisit-actions">
+          <a class="secondary" href="#input">이모지 바꿔 보기</a>
+          <button type="button" class="secondary" id="change-date" hidden>다른 날짜 보기</button>
+        </div>
+        <button type="button" class="secondary support-action" id="support-open">포모지 응원하기</button>
       </div>
       <aside id="result-ad-slot" class="ad-slot monetization-slot" aria-label="결과 하단 광고 배너" hidden>
         <div class="slot-preview"><strong>결과 하단 광고 배너</strong><span>가로 최대 480px · 높이 64px</span></div>
