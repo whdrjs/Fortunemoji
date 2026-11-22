@@ -197,6 +197,17 @@ h1, h2 { margin: 0; font-size: clamp(1.32rem, 5.55vw, 2rem); line-height: 1.36; 
 .result-copy { padding-top: clamp(24px, 7vw, 38px); }
 .result-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 14px; }
 .result-date { color: var(--muted); font-size: .875rem; }
+.wish-result {
+  margin-top: 20px;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.wish-result p { margin: 0; }
+.wish-label { color: var(--text); font-size: .95rem; }
+.wish-chance { color: var(--blue); font-size: 1.25rem; font-weight: 750; }
+.wish-reason { color: var(--muted); font-size: .9rem; }
+.wish-result .wish-basis { margin-top: 6px; color: var(--muted); font-size: .8rem; }
 .post-emojis { margin: 0; font-size: 1.125rem; line-height: 1.35; }
 .post-title {
   color: var(--text);
@@ -375,7 +386,7 @@ summary { padding: 7px 0; cursor: pointer; }
 #compose-title { scroll-margin-top: 16px; }
 
 .fortune-date-label { display: block; margin: 18px 0 7px; font-size: .875rem; }
-#fortune-date {
+#fortune-date, #christmas-wish {
   display: block;
   box-sizing: border-box;
   width: 100%;
@@ -389,3 +400,5 @@ summary { padding: 7px 0; cursor: pointer; }
   font: inherit;
   color-scheme: dark;
 }
+
+#christmas-wish:invalid { color: var(--muted); }

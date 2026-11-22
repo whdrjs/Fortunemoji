@@ -1,26 +1,4 @@
-'use strict';
-
-const christmasEveDate = '2026-12-24';
-const defaultFortuneDate = '2026-12-25';
-
-function isFortuneDate(value) {
-  return value === christmasEveDate || value === defaultFortuneDate;
-}
-
-function fortuneDateLabel(value) {
-  const [, month, day] = value.split('-').map(Number);
-  return `${month}월 ${day}일`;
-}
-
-function normalizeFortuneEmoji(emoji) {
-  return emoji.replace(/[\uFE0E\uFE0F\p{Emoji_Modifier}]/gu, '');
-}
-
-const sceneLabels = {
-  cafe: '문자로 그린 카페', bus: '문자로 그린 정류장',
-  home: '문자로 그린 집', tree: '문자로 그린 크리스마스 트리',
-  emojis: '입력한 이모지 네 개를 문자로 그린 장면'
-};
+import {christmasEveDate, defaultFortuneDate, isFortuneDate, normalizeFortuneEmoji, sceneLabels} from './christmas.mjs';
 
 const story = (title, first, last, art = 'emojis') => ({
   title, story: first + '\n\n' + last, art
@@ -320,7 +298,7 @@ const otherScenes = [
   }
 ];
 
-function makeFortune(emojis, date = defaultFortuneDate) {
+export function makeFortune(emojis, date = defaultFortuneDate) {
   if (!isFortuneDate(date)) date = defaultFortuneDate;
   const isEve = date === christmasEveDate;
   const featured = featuredByKey.get(sceneKey(emojis));
