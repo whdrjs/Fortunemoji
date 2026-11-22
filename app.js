@@ -290,7 +290,7 @@ function renderRoute(change) {
     waitingProgress.value = layoutPreview ? .6 : 0;
     if (!layoutPreview) {
       const started = performance.now();
-      const duration = GlyphArt.motionEnabled() ? 8100 : 0;
+      const duration = GlyphArt.motionEnabled() ? 5400 : 0;
       let stageIndex = 0;
       function advance(now) {
         if (location.hash !== '#waiting') return;
