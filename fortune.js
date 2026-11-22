@@ -195,9 +195,10 @@ function joinObjects(objects) {
 
 function weaveCues(scene, cues, isEve) {
   const items = (isEve ? cues : [...cues].reverse()).map(interpretCue);
-  const moments = items.flatMap(item => item.moment ? [item.moment] : []);
-  const props = items.flatMap(item => item.object ? [item.object] : []);
-  const reactions = items.flatMap(item => item.reaction ? [item.reaction] : []);
+  const unique = field => [...new Set(items.map(item => item[field]).filter(Boolean))];
+  const moments = unique('moment');
+  const props = unique('object');
+  const reactions = unique('reaction');
   const [opening, ending] = scene.story.split('\n\n');
   const propLine = props.length ? `시선이 ${joinObjects(props)} 쪽에 잠깐 머문다.` : '';
   const first = [opening, ...moments, propLine].filter(Boolean).join(' ');
@@ -254,6 +255,44 @@ const seasonalScenes = [
   }
 ];
 
+// When the inputs mostly describe feelings, the mix drives the whole scene.
+const affectionCues = /^[❤♥💕💞💖💗💓💝💘🤗🥰😘😚😙😗😍😻🫶]$/u;
+const uneasyCues = /^[😭😢😔😞😒😬😩💔😤🫠🙄😥😓😰😟]$/u;
+
+const moodScenes = {
+  affection: {
+    eve: story('보고 싶다는 말을 농담으로 보낸다',
+      '단톡방에 보낼 농담을 그 사람한테만 보낸다. 답장 기다리는 게 티 날까 봐 휴대폰을 뒤집어 둔다. 진동이 오자마자 다시 뒤집는다.',
+      '“이거 나한테만 보낸 거지?”라는 말에 한참 뜸을 들인다. “응. 보고 싶다는 말은 너무 티 나잖아.” 보내고 나서야 더 티 나는 걸 안다.'),
+    day: story('잘 나온 사진보다 웃긴 사진을 보낸다',
+      '사진첩에서 둘이 잘 나온 사진을 골라 둔다. 막상 보내는 건 상대가 웃다가 눈을 감은 사진이다. “이거 보면 네 웃음소리 들리는 것 같아.”',
+      '상대가 답장 대신 전화를 건다. 인사도 하기 전에 둘 다 웃음부터 터진다.')
+  },
+  humor: {
+    eve: story('집 간다고 한 사람이 제일 늦게 간다',
+      '가방을 메고 “난 진짜 간다”라고 한다. 문손잡이를 잡았는데 뒤에서 올해 제일 웃겼던 얘기가 나온다. 문을 반쯤 열고 “그래서 그다음엔?” 하고 묻는다.',
+      '잠시 뒤 누가 막차 시간을 확인한다. 가방은 언제 내려놨는지 다시 의자 밑에 있다.'),
+    day: story('그 얘기 안 하기로 한 사람이 제일 먼저 한다',
+      '어제 해놓고 후회한 말이 있어 단톡방을 조용히 넘긴다. 다들 점심 메뉴 얘기만 한다. 아무도 기억 못 하는 줄 알고 내가 먼저 “근데 어제 그거…”라고 꺼낸다.',
+      '답장이 동시에 세 개 온다. 셋 다 뒤에 무슨 말을 할지 이미 알고 있다.')
+  },
+  uneasy: {
+    eve: story('괜찮다고 쓰다가 사실대로 보낸다',
+      '약속이 밀렸다는 연락에 “괜찮아”라고 쓴다. 그 말을 한 번 보내면 또 혼자 기다릴 것 같아서 지운다. 이번에는 “사실 좀 서운해”라고 보낸다.',
+      '상대는 변명 대신 언제부터 기다렸냐고 묻는다. 휴대폰을 내려놓으니 구겨질 만큼 쥐고 있던 영수증이 보인다.'),
+    day: story('답장보다 먼저 전화가 온다',
+      '어제 못 한 말이 아침까지 걸린다. 대화창을 열고 한 줄 썼다가 지운다. 세 번째로 다시 쓰는 사이 상대에게 전화가 온다.',
+      '“아까부터 뭐 보내려는지 다 보여.” 그 말에 힘이 풀린다. 길게 써둔 설명은 지우고, 어제 제일 해주고 싶었던 말 하나만 한다.')
+  }
+};
+
+function chooseMoodScene(cues) {
+  if (cues.some(cue => affectionCues.test(cue.key) || (cue.kind === 'mood' && cue.key !== '💔' && cue.name.includes('하트')))) {
+    return moodScenes.affection;
+  }
+  return cues.some(cue => uneasyCues.test(cue.key)) ? moodScenes.uneasy : moodScenes.humor;
+}
+
 const otherScenes = [
   {
     eve: story('나오라는 말이 사진보다 늦게 온다',
@@ -301,8 +340,14 @@ function makeFortune(emojis, date = defaultFortuneDate) {
       const supportingCues = cues.filter((_, i) => i !== index);
       scene = weaveCues((isEve ? candidate.eve : candidate.day)(cue), supportingCues, isEve);
     } else {
-      const variant = otherScenes[seed % otherScenes.length];
-      scene = weaveCues(isEve ? variant.eve : variant.day, cues, isEve);
+      const feelings = cues.filter(cue => interpretCue(cue).reaction);
+      if (feelings.length >= 3) {
+        const variant = chooseMoodScene(feelings);
+        scene = weaveCues(isEve ? variant.eve : variant.day, cues.filter(cue => !feelings.includes(cue)), isEve);
+      } else {
+        const variant = otherScenes[seed % otherScenes.length];
+        scene = weaveCues(isEve ? variant.eve : variant.day, cues, isEve);
+      }
     }
   }
   return {date, emojis, ...scene, artLabel: sceneLabels[scene.art]};
