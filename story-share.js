@@ -1,4 +1,4 @@
-'use strict';
+import {fortuneDateLabel} from './christmas-data.js';
 
 const storyFont = 'system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", sans-serif';
 const storyGraphemes = new Intl.Segmenter('ko', {granularity: 'grapheme'});
@@ -28,7 +28,7 @@ function wrapStoryText(ctx, text, maxWidth) {
   return lines;
 }
 
-async function makeStoryImage(sample, paintArt) {
+export async function makeStoryImage(sample, paintArt) {
   await document.fonts?.ready;
   const card = document.createElement('canvas');
   card.width = 1080;
@@ -52,7 +52,9 @@ async function makeStoryImage(sample, paintArt) {
   text('Formoji', left, 236, `800 48px ${storyFont}`, ink);
   ctx.fillStyle = '#344256';
   ctx.fillRect(left, 309, innerWidth, 2);
-  const date = sample.date ? `미래 기록 · ${fortuneDateLabel(sample.date)}` : '미래 기록';
+  const label = sample.isPreview ? '예시 장면' : '미래 기록';
+  const clock = sample.time ? ` ${sample.time}` : '';
+  const date = sample.date ? `${label} · ${fortuneDateLabel(sample.date)}${clock}` : label;
   const metaFont = `500 36px ${storyFont}`;
   text(date, left, 343, metaFont, secondary);
 
@@ -74,12 +76,19 @@ async function makeStoryImage(sample, paintArt) {
   }
 
   const title = layout(sample.title, 72, 800, ink, 224);
-  const story = layout(sample.story, 42, 500, secondary, 475);
+  const story = layout(sample.story, 42, 500, secondary, sample.wishLabel ? 360 : 475);
   const titleY = 424;
   const storyY = titleY + title.height + 16;
   title.draw(titleY);
   story.draw(storyY);
-  const artTop = storyY + story.height + 20;
+  let artTop = storyY + story.height + 20;
+  if (sample.wishLabel) {
+    const wish = layout(sample.wishLabel, 36, 600, ink, 106);
+    wish.draw(artTop);
+    artTop += wish.height + 4;
+    text(`성사 확률 ${sample.chance}% · 포모지 시뮬레이션 기준`, left, artTop, `600 32px ${storyFont}`, '#8cc3ff');
+    artTop += 64;
+  }
   const artHeight = Math.max(0, Math.min(innerWidth * 420 / 544, 1570 - artTop));
   const artWidth = artHeight * 544 / 420;
   if (artHeight) paintArt(ctx, (card.width - artWidth) / 2, artTop, artWidth, artHeight);

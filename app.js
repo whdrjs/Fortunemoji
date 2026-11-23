@@ -1,13 +1,20 @@
-'use strict';
+import {
+  christmasEveDate, defaultFortuneDate, fortuneDateLabel, hasDuplicateEmoji, hasWish,
+  isFortuneDate, isSingleEmoji, readGeneratedScene, sceneLabels, wishes
+} from './christmas-data.js';
+import {makeChristmasPreview} from './christmas-preview.js?v=1';
+import {makeStoryImage} from './story-share.js?v=5';
 
-const samples = [
-  makeFortune(['☕', '🫠', '💬', '🚪'], christmasEveDate),
-  makeFortune(['🚌', '❄️', '☕', '🧣'], christmasEveDate),
-  makeFortune(['🏠', '🥂', '🛏️', '🌅'], defaultFortuneDate)
-];
 const get = id => document.getElementById(id);
 const input = get('emoji-entry');
 const dateInput = get('fortune-date');
+const wishInput = get('christmas-wish');
+for (const [id, {label}] of Object.entries(wishes)) {
+  wishInput.add(new Option(label, id));
+}
+const localHost = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+const layoutPreview = localHost && new URLSearchParams(location.search).get('layout-preview') === '1';
+get('ai-input-note').hidden = layoutPreview;
 const startButton = get('start');
 const picker = get('emoji-picker');
 const pickerButton = get('picker-open');
@@ -39,19 +46,18 @@ for (const [emoji, name] of choices) {
     applyInput(input.value + emoji);
     if (entered.length === 4) {
       setPickerOpen(false);
-      (startButton.disabled ? input : startButton).focus();
+      const next = hasDuplicateEmoji(entered) ? input : hasWish(wishInput.value) ? startButton : wishInput;
+      next.focus();
     }
   });
   picker.append(choice);
 }
 const feedback = get('entry-hint');
 const split = new Intl.Segmenter('ko', {granularity:'grapheme'});
-const emojiCluster = /^(?:\p{Regional_Indicator}{2}|[#*0-9]\uFE0F?\u20E3|(?=[\s\S]*\p{Extended_Pictographic})[\p{Extended_Pictographic}\p{Emoji_Modifier}\uFE0E\uFE0F\u200D\u{E0020}-\u{E007F}]+)$/u;
 let entered = [];
 const views = ['home', 'waiting', 'result', 'about', 'privacy'];
 // The layout preview keeps the waiting screen open and can use sample input.
-const layoutPreview = new URLSearchParams(location.search).get('layout-preview') === '1';
-const previewFortune = {emojis: ['❤️', '😩', '🍽️', '💀'], date: defaultFortuneDate};
+const previewFortune = {emojis: ['☕', '🫠', '💬', '🚪'], date: defaultFortuneDate, wish: 'rest'};
 const previewNav = get('layout-preview-nav');
 const previewLinks = previewNav.querySelectorAll('a');
 previewNav.hidden = !layoutPreview;
@@ -66,15 +72,10 @@ let readingArt;
 let aboutArt;
 let resultArt;
 
-let transitionFrame;
+let generationRequest;
 const fortuneKey = 'fourmoji-last-fortune';
 const maxInputLength = 4096;
 const maxStoredLength = 4096;
-
-function isSingleEmoji(value) {
-  return typeof value === 'string' && value.length <= 64 && emojiCluster.test(value) &&
-    split.segment(value).containing(0)?.segment === value;
-}
 
 function readLastFortune() {
   try {
@@ -82,20 +83,21 @@ function readLastFortune() {
     if (!raw || raw.length > maxStoredLength) return null;
     const saved = JSON.parse(raw);
     const emojis = Array.isArray(saved) ? saved : saved?.emojis;
-    if (!Array.isArray(emojis) || emojis.length !== 4 || !emojis.every(isSingleEmoji)) return null;
-    return {emojis, date: isFortuneDate(saved?.date) ? saved.date : defaultFortuneDate};
+    if (!Array.isArray(emojis) || emojis.length !== 4 ||
+        !emojis.every(isSingleEmoji) || hasDuplicateEmoji(emojis)) return null;
+    const date = isFortuneDate(saved?.date) ? saved.date : defaultFortuneDate;
+    const wish = hasWish(saved?.wish) ? saved.wish : null;
+    const input = {emojis, date, wish};
+    const generated = wish ? readGeneratedScene(saved.generated, input) : null;
+    return {...input, generated};
   } catch {
     return null;
   }
 }
-function hasDuplicateEmoji(emojis) {
-  return new Set(emojis.map(normalizeFortuneEmoji)).size !== emojis.length;
-}
 function canStartFortune() {
-  return entered.length === 4 && !hasDuplicateEmoji(entered) && isFortuneDate(dateInput.value);
+  return entered.length === 4 && !hasDuplicateEmoji(entered) && isFortuneDate(dateInput.value) && hasWish(wishInput.value);
 }
-const lastFortune = readLastFortune();
-let submitted = lastFortune && !hasDuplicateEmoji(lastFortune.emojis) ? lastFortune : null;
+let submitted = readLastFortune();
 function applyInput(value) {
   const oversized = value.length > maxInputLength;
   const parts = oversized ? [] : Array.from(split.segment(value), item => item.segment).filter(item => item.trim());
@@ -123,6 +125,16 @@ function makeText(tag, classname, value) {
   node.textContent = value;
   return node;
 }
+function generatedScene(input) {
+  const result = input.generated;
+  return {
+    date: input.date, emojis: input.emojis, time: result.observed_at,
+    title: result.headline, story: result.scene, wishLabel: wishes[input.wish].label,
+    chance: result.wish_chance, chanceReason: result.chance_reason,
+    art: result.art, artLabel: sceneLabels[result.art]
+  };
+}
+
 function paintCard(node, sample) {
   const art = document.createElement('div');
   art.className = 'art result-art';
@@ -140,8 +152,10 @@ function paintCard(node, sample) {
   const meta = document.createElement('div');
   meta.className = 'result-meta';
   if (sample.date) {
-    const date = makeText('time', 'result-date', `미래 기록 · ${fortuneDateLabel(sample.date)}`);
-    date.dateTime = sample.date;
+    const clock = sample.time ? ` ${sample.time}` : '';
+    const label = sample.isPreview ? '예시 장면' : '미래 기록';
+    const date = makeText('time', 'result-date', `${label} · ${fortuneDateLabel(sample.date)}${clock}`);
+    date.dateTime = sample.date + (sample.time ? `T${sample.time}` : '');
     meta.append(date);
   }
   content.append(
@@ -149,6 +163,17 @@ function paintCard(node, sample) {
     makeText('h2', 'post-title', sample.title),
     makeText('p', 'story-body', sample.story)
   );
+  if (sample.wishLabel) {
+    const wishResult = document.createElement('div');
+    wishResult.className = 'wish-result';
+    wishResult.append(
+      makeText('p', 'wish-label', sample.wishLabel),
+      makeText('p', 'wish-chance', `성사 확률 ${sample.chance}%`),
+      makeText('p', 'wish-reason', sample.chanceReason),
+      makeText('p', 'wish-basis', '포모지 시뮬레이션 기준')
+    );
+    content.append(wishResult);
+  }
   node.replaceChildren(content, art);
   return GlyphArt.mount(canvas, 'result', sample.art, sample.emojis);
 }
@@ -237,25 +262,82 @@ get('copy-home').addEventListener('click', async () => {
 const supportDialog = get('support-dialog');
 get('support-open').addEventListener('click', () => supportDialog.showModal());
 
+function saveFortune() {
+  try { sessionStorage.setItem(fortuneKey, JSON.stringify(submitted)); } catch {}
+}
+
+const waitingRetry = get('waiting-retry');
+const waitingTitle = get('waiting-title');
+const waitingStage = get('waiting-stage');
+
+async function requestScene(input) {
+  waitingTitle.textContent = `${fortuneDateLabel(input.date)}의 미래 장면을 만드는 중`;
+  waitingStage.textContent = '최근 이모지 네 개에서 장면의 단서를 찾고 있어요.';
+  waitingProgress.hidden = false;
+  waitingProgress.removeAttribute('value');
+  waitingRetry.hidden = true;
+
+  const controller = new AbortController();
+  generationRequest = controller;
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+  let message = '장면을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+  try {
+    const response = await fetch('/api/fortune', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({date: input.date, wish: input.wish, emojis: input.emojis}),
+      signal: controller.signal
+    });
+    if (response.ok) {
+      const result = readGeneratedScene(await response.json(), input);
+      if (result && generationRequest === controller && submitted === input && location.hash === '#waiting') {
+        submitted = {...input, generated: result};
+        saveFortune();
+        generationRequest = null;
+        location.replace('#result');
+        return;
+      }
+    } else if (response.status === 404 || response.status === 503) {
+      message = '아직 미래 장면을 만들 수 없어요. 잠시 후 다시 들러주세요.';
+    } else if (response.status === 429) {
+      message = '잠깐 요청이 몰렸어요. 1분쯤 뒤에 다시 시도해 주세요.';
+    }
+  } catch {
+    if (controller.signal.aborted) message = '응답이 오래 걸리고 있어요. 다시 시도해 주세요.';
+  } finally {
+    clearTimeout(timeout);
+  }
+  if (generationRequest !== controller || submitted !== input || location.hash !== '#waiting') return;
+  generationRequest = null;
+  waitingTitle.textContent = '미래 장면을 열지 못했어요';
+  waitingStage.textContent = message;
+  waitingProgress.hidden = true;
+  waitingRetry.hidden = false;
+}
+waitingRetry.addEventListener('click', () => {
+  if (submitted?.wish && !generationRequest) void requestScene(submitted);
+});
+
 function renderRoute(change) {
   const hash = location.hash.slice(1);
-  const card = /^card-([1-3])$/.exec(hash);
-  cancelAnimationFrame(transitionFrame);
-  get('change-date').hidden = hash !== 'result' || !submitted;
+  generationRequest?.abort();
+  generationRequest = null;
+  get('change-date').hidden = hash !== 'result' || layoutPreview;
   resetStoryShare();
   if (supportDialog.open) supportDialog.close();
-  const fortuneInput = submitted ?? (layoutPreview ? previewFortune : null);
-  if ((hash === 'waiting' || hash === 'result') && !fortuneInput) {
+  const fortuneInput = layoutPreview ? previewFortune : submitted;
+  if ((hash === 'waiting' && !fortuneInput?.wish) ||
+      (hash === 'result' && !layoutPreview && !fortuneInput?.generated) ||
+      /^card-[1-3]$/.test(hash)) {
     location.replace('#input');
     return;
   }
-  const view = card ? 'result' : /^privacy-(?:result|card-[1-3])$/.test(hash) ? 'privacy' : views.includes(hash) ? hash : 'home';
+  const view = /^privacy-(?:result|card-[1-3])$/.test(hash) ? 'privacy' : views.includes(hash) ? hash : 'home';
   get('site-footer').hidden = view !== 'home' && view !== 'result';
-  if (view === 'result') privacyLink.href = card ? '#privacy-card-' + card[1] : '#privacy-result';
+  if (view === 'result') privacyLink.href = '#privacy-result';
   if (view === 'home') privacyLink.href = '#privacy';
   if (view === 'privacy') {
-    const sampleRoute = hash.startsWith('privacy-card-');
-    const fromResult = sampleRoute || (hash === 'privacy-result' && fortuneInput);
+    const fromResult = hash === 'privacy-result' && (layoutPreview || fortuneInput?.generated);
     privacyReturn.href = fromResult ? '#' + hash.slice('privacy-'.length) : '#home';
     privacyReturn.textContent = fromResult ? '미래 기록으로 돌아가기' : '메인으로 돌아가기';
   }
@@ -275,44 +357,22 @@ function renderRoute(change) {
     aboutArt.show();
   } else get('about-link').removeAttribute('aria-current');
   if (view === 'waiting') {
-    const fortune = makeFortune(fortuneInput.emojis, fortuneInput.date);
-    readingArt = GlyphArt.mount(get('reading-signal'), 'reading', fortune.art, fortune.emojis);
+    readingArt = GlyphArt.mount(get('reading-signal'), 'reading', 'emojis', fortuneInput.emojis);
     readingArt.show();
     get('waiting-emojis').replaceChildren(...fortuneInput.emojis.map(emoji => makeText('span', 'signal-emoji', emoji)));
-    get('waiting-title').textContent = `${fortuneDateLabel(fortune.date)}의 장면을 구성하는 중`;
-    const waitingStage = get('waiting-stage');
-    const stages = [
-      '이모지에서 단서를 읽는 중',
-      '단서를 이어 사건을 구성하는 중',
-      '장면을 문자 그림으로 그리는 중'
-    ];
-    waitingStage.textContent = stages[layoutPreview ? 1 : 0];
-    waitingProgress.value = layoutPreview ? .6 : 0;
-    if (!layoutPreview) {
-      const started = performance.now();
-      const duration = GlyphArt.motionEnabled() ? 5400 : 0;
-      let stageIndex = 0;
-      function advance(now) {
-        if (location.hash !== '#waiting') return;
-        if (now - started >= duration) {
-          waitingProgress.value = 1;
-          location.replace('#result');
-        } else {
-          const progress = (now - started) / duration;
-          waitingProgress.value = progress;
-          const nextStage = Math.floor(progress * stages.length);
-          if (nextStage !== stageIndex) {
-            stageIndex = nextStage;
-            waitingStage.textContent = stages[stageIndex];
-          }
-          transitionFrame = requestAnimationFrame(advance);
-        }
-      }
-      transitionFrame = requestAnimationFrame(advance);
+    if (layoutPreview) {
+      waitingTitle.textContent = '미래 장면 미리보기';
+      waitingStage.textContent = '단서를 이어 사건을 구성하는 중';
+      waitingProgress.hidden = false;
+      waitingProgress.value = .6;
+    } else if (fortuneInput.generated) {
+      location.replace('#result');
+    } else {
+      void requestScene(fortuneInput);
     }
   }
   if (view === 'result') {
-    const sample = card ? samples[Number(card[1])-1] : makeFortune(fortuneInput.emojis, fortuneInput.date);
+    const sample = layoutPreview ? makeChristmasPreview(fortuneInput) : generatedScene(fortuneInput);
     resultArt = paintCard(get('story-card'), sample);
     resultArt.show();
     prepareStoryShare(sample, resultArt);
@@ -331,18 +391,23 @@ input.addEventListener('keydown',event => {if(event.key === 'Enter' && !startBut
 get('clear').addEventListener('click',() => { applyInput('');input.focus(); });
 startButton.addEventListener('click', () => {
   if (!canStartFortune()) return;
-  showFortune(entered, dateInput.value);
+  if (layoutPreview) {
+    location.hash = 'result';
+    return;
+  }
+  showFortune(entered, dateInput.value, wishInput.value);
 });
 get('change-date').addEventListener('click', () => {
   if (!submitted) return;
   const date = submitted.date === christmasEveDate ? defaultFortuneDate : christmasEveDate;
-  applyInput(submitted.emojis.join(''));
   dateInput.value = date;
-  showFortune(submitted.emojis, date);
+  wishInput.value = submitted.wish || '';
+  applyInput(submitted.emojis.join(''));
+  showFortune(submitted.emojis, date, submitted.wish);
 });
-function showFortune(emojis, date) {
-  submitted = {emojis: emojis.slice(), date};
-  try { sessionStorage.setItem(fortuneKey, JSON.stringify(submitted)); } catch {}
+function showFortune(emojis, date, wish) {
+  submitted = {emojis: emojis.slice(), date, wish};
+  saveFortune();
   location.hash = 'waiting';
 }
 const motionToggle = get('motion-toggle');
@@ -364,9 +429,12 @@ get('guide').addEventListener('click',e => {
   if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom) get('guide').close();
 });
 addEventListener('hashchange',() => renderRoute(true));
-dateInput.value = lastFortune?.date || defaultFortuneDate;
-dateInput.addEventListener('change', () => {
-  startButton.disabled = !canStartFortune();
-});
-applyInput(lastFortune?.emojis.join('') || '');
+dateInput.value = submitted?.date || defaultFortuneDate;
+wishInput.value = submitted?.wish || '';
+for (const select of [dateInput, wishInput]) {
+  select.addEventListener('change', () => {
+    startButton.disabled = !canStartFortune();
+  });
+}
+applyInput(submitted?.emojis.join('') || '');
 renderRoute(false);
