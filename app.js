@@ -55,7 +55,7 @@ for (const [emoji, name] of choices) {
 const feedback = get('entry-hint');
 const split = new Intl.Segmenter('ko', {granularity:'grapheme'});
 let entered = [];
-const views = ['home', 'waiting', 'result', 'about', 'privacy'];
+const views = ['home', 'waiting', 'reading', 'result', 'about', 'privacy'];
 // The layout preview keeps the waiting screen open and can use sample input.
 const previewFortune = {emojis: ['☕', '🫠', '💬', '🚪'], date: defaultFortuneDate, wish: 'rest'};
 const previewNav = get('layout-preview-nav');
@@ -294,7 +294,7 @@ async function requestScene(input) {
         submitted = {...input, generated: result};
         saveFortune();
         generationRequest = null;
-        location.replace('#result');
+        location.replace('#reading');
         return;
       }
     } else if (response.status === 404 || response.status === 503) {
@@ -318,6 +318,20 @@ waitingRetry.addEventListener('click', () => {
   if (submitted?.wish && !generationRequest) void requestScene(submitted);
 });
 
+const readingLines = get('reading-lines');
+const readingNext = get('reading-next');
+function revealBeat() {
+  const beats = submitted.generated.beats;
+  const index = readingLines.childElementCount;
+  if (index === beats.length) {
+    location.replace('#result');
+    return;
+  }
+  readingLines.append(makeText('p', 'reading-line', beats[index]));
+  readingNext.textContent = index + 1 === beats.length ? '내 예측 카드 보기' : '계속 듣기';
+}
+readingNext.addEventListener('click', revealBeat);
+
 function renderRoute(change) {
   const hash = location.hash.slice(1);
   generationRequest?.abort();
@@ -327,6 +341,7 @@ function renderRoute(change) {
   if (supportDialog.open) supportDialog.close();
   const fortuneInput = layoutPreview ? previewFortune : submitted;
   if ((hash === 'waiting' && !fortuneInput?.wish) ||
+      (hash === 'reading' && !fortuneInput?.generated) ||
       (hash === 'result' && !layoutPreview && !fortuneInput?.generated) ||
       /^card-[1-3]$/.test(hash)) {
     location.replace('#input');
@@ -366,10 +381,14 @@ function renderRoute(change) {
       waitingProgress.hidden = false;
       waitingProgress.value = .6;
     } else if (fortuneInput.generated) {
-      location.replace('#result');
+      location.replace('#reading');
     } else {
       void requestScene(fortuneInput);
     }
+  }
+  if (view === 'reading') {
+    readingLines.replaceChildren();
+    revealBeat();
   }
   if (view === 'result') {
     const sample = layoutPreview ? makeChristmasPreview(fortuneInput) : generatedScene(fortuneInput);

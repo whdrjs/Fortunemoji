@@ -69,6 +69,8 @@ function cleanText(value, max) {
 }
 
 export function readGeneratedScene(value, input) {
+  const beats = Array.isArray(value?.beats) && value.beats.map(line => cleanText(line, 90));
+  if (!beats || beats.length !== 4 || !beats.every(Boolean) || new Set(beats).size !== 4) return null;
   const headline = cleanText(value?.headline, 58);
   const scene = cleanText(value?.scene, 260);
   const reason = cleanText(value?.chance_reason, 90);
@@ -84,7 +86,7 @@ export function readGeneratedScene(value, input) {
   if (new Set(sentences).size !== sentences.length) return null;
 
   return {
-    headline, scene, observed_at: time, wish_chance: value.wish_chance,
+    beats, headline, scene, observed_at: time, wish_chance: value.wish_chance,
     chance_reason: reason, art: value.art, visual_cue: visualCue
   };
 }
