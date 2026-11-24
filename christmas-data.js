@@ -55,7 +55,7 @@ export function wishChance({date, wish, emojis}) {
   const key = [date, wish, ...emojis.map(normalizeFortuneEmoji).sort()].join('|');
   let hash = 2166136261;
   for (const char of key) hash = Math.imul(hash ^ char.codePointAt(0), 16777619);
-  return 29 + (hash >>> 0) % 65;
+  return 29 + (hash >>> 0) % 66;
 }
 
 export function chanceTier(chance) {

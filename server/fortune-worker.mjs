@@ -55,6 +55,7 @@ async function handleRequest(request, env) {
       headers: {Authorization: `Bearer ${env.OPENAI_API_KEY}`, 'Content-Type': 'application/json'},
       body: JSON.stringify({
         model: env.OPENAI_MODEL,
+        reasoning: {effort: 'none'},
         instructions,
         input: JSON.stringify(promptInput(input)),
         text: {format},
